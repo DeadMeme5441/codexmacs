@@ -1,46 +1,35 @@
-;;; codexmacs.el --- Description -*- lexical-binding: t; -*-
+;;; codexmacs.el --- Emacs helpers for Codex OAuth -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2025 DeadMeme5441
 ;;
 ;; Author: DeadMeme5441 <hrishikesh290@gmail.com>
 ;; Maintainer: DeadMeme5441 <hrishikesh290@gmail.com>
-;; Created: September 24, 2025
-;; Modified: September 24, 2025
-;; Version: 0.0.1
-;; Keywords: codex cli gpt ai
+;; Version: 1.0.0
+;; Package-Requires: ((emacs "25.1") (request "0.3.0") (simple-httpd "1.5.1"))
 ;; Homepage: https://github.com/DeadMeme5441/codexmacs
-;; Package-Requires: ((emacs "24.3"))
+;; Keywords: codex cli gpt ai authentication
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
 ;;; Commentary:
 ;;
-;;  Description
+;; Thin wrapper around the Codex OAuth implementation.  Provides the
+;; interactive entry point `codexmacs-login', which simply delegates to
+;; the core routines defined in `codex-auth.el'.
 ;;
 ;;; Code:
 
-(require 'cl-lib)
-(require 'url)
-(require 'request)
+(require 'codex-auth)
 
-(setq default-issuer "https://auth.openai.com")
-(setq default-port 1455)
+;;;###autoload
+(defun codexmacs-login ()
+  "Authenticate with OpenAI using the Codex OAuth flow."
+  (interactive)
+  (codex-auth-login))
 
-(cl-defstruct pkceCodes
-  "Holds PKCE codes"
-  code_verifier
-  code_challenge)
-
-(defun generate-pkce-verifier ()
-  (let ((random-string (make-string 64 0)))
-    (dotimes (i 64)
-      (aset random-string i (random 256)))
-    (base64url-encode-string random-string t)))
-
-(generate-pkce-verifier)
-
-(defun generate-pkce-challenge (code-verifier)
-  (base64url-encode-string (secure-hash 'sha256 code-verifier) t))
+;;;###autoload
+(defalias 'codexmacs-authenticate #'codexmacs-login)
 
 (provide 'codexmacs)
+
 ;;; codexmacs.el ends here
