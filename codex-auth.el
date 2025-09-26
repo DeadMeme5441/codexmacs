@@ -124,6 +124,18 @@ Returns an alist keyed by strings."
       "https://platform.openai.com"
     "https://platform.api.openai.org"))
 
+(defun codexmacs--redirect-and-finish (path)
+  "Redirect the browser to PATH and conclude the login flow."
+  (httpd-redirect t path 302)
+  (setq codexmacs--login-finished-p t)
+  ;; Stop the temporary server shortly after so the waiting loop exits even
+  ;; if the browser window is closed before hitting /success.
+  (run-at-time
+   1 nil
+   (lambda ()
+     (ignore-errors
+       (httpd-stop)))))
+
 (defun codexmacs--build-success-url (token-record access-claims org-id project-id &optional exchanged-access-token)
   "Compose the success redirect URL mirroring codex CLI behaviour."
   (let* ((id-token (codexmacs--json-get token-record "id_token"))
@@ -389,7 +401,7 @@ then redirects the browser to the final /success page."
                                   (message "Login credentials saved.")
                                   (let ((success-url (codexmacs--build-success-url
                                                       token-record access-claims org-id project-id api-key)))
-                                    (httpd-redirect t success-url 302))))))
+                                    (codexmacs--redirect-and-finish success-url)))))))
                           proc))
                      (progn
                        (message "Skipping API key exchange: missing organization/project assignments.")
@@ -397,7 +409,7 @@ then redirects the browser to the final /success page."
                        (message "Login credentials saved without API key.")
                        (let ((success-url (codexmacs--build-success-url
                                            token-record access-claims org-id project-id)))
-                         (httpd-redirect t success-url 302))))))))))))
+                         (codexmacs--redirect-and-finish success-url)))))))))))))
       proc)))
 (defservlet* success "text/html" ()
   "Displays the final success page to the user in their browser.
