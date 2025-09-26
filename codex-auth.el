@@ -402,15 +402,17 @@ then redirects the browser to the final /success page."
                                   (let ((success-url (codexmacs--build-success-url
                                                       token-record access-claims org-id project-id api-key)))
                                     (codexmacs--redirect-and-finish success-url)))))))
-                          proc))
-                     (progn
-                       (message "Skipping API key exchange: missing organization/project assignments.")
-                       (codexmacs--persist-tokens token-record nil)
-                       (message "Login credentials saved without API key.")
-                       (let ((success-url (codexmacs--build-success-url
-                                           token-record access-claims org-id project-id)))
-                         (codexmacs--redirect-and-finish success-url)))))))))))))
-      proc)))
+                         proc))
+                   (progn
+                     (message "Skipping API key exchange: missing organization/project assignments.")
+                     (codexmacs--persist-tokens token-record nil)
+                     (message "Login credentials saved without API key.")
+                     (let ((success-url (codexmacs--build-success-url
+                                         token-record access-claims org-id project-id)))
+                       (codexmacs--redirect-and-finish success-url))
+                     proc))))))))))))
+
+
 (defservlet* success "text/html" ()
   "Displays the final success page to the user in their browser.
 Mirrors the Codex CLI by serving the bundled assets/success.html file."
